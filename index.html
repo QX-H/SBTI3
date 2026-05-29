@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBTI专业人格测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: #f0f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 550px;
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+        }
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        .question-area {
+            margin-bottom: 25px;
+        }
+        .question-text {
+            font-size: 18px;
+            color: #334155;
+            margin-bottom: 22px;
+            line-height: 1.6;
+        }
+        .option-item {
+            padding: 14px 18px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .option-item:hover {
+            background-color: #e6f7ff;
+            border-color: #1890ff;
+        }
+        .btn-next {
+            width: 100%;
+            padding: 14px;
+            background-color: #1890ff;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .result-area {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f0f9ff;
+            border-radius: 10px;
+            display: none;
+        }
+        .result-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1890ff;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .result-desc {
+            font-size: 16px;
+            color: #334155;
+            line-height: 1.7;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SBTI人格深度测试</h1>
+        <div class="question-area">
+            <div class="question-text" id="question"></div>
+            <div class="option-item" onclick="selectAnswer('A')" id="optA"></div>
+            <div class="option-item" onclick="selectAnswer('B')" id="optB"></div>
+            <div class="option-item" onclick="selectAnswer('C')" id="optC"></div>
+            <div class="option-item" onclick="selectAnswer('D')" id="optD"></div>
+        </div>
+        <button class="btn-next" onclick="nextQuestion()">下一题</button>
+        <div class="result-area" id="resultBox">
+            <div class="result-title" id="resultType"></div>
+            <div class="result-desc" id="resultDetail"></div>
+        </div>
+    </div>
+
+    <script>
+        // 5道贴合现实逻辑的测试题目，每题ABCD四个选项
+        const testQuestions = [
+            {
+                q: "结束一周忙碌后，你更倾向如何度过周末？",
+                A: "独自居家，看书、追剧享受独处时光",
+                B: "约1-2位挚友，轻松聊天或短途出行",
+                C: "参与朋友组织的多人聚会，活跃社交氛围",
+                D: "规划学习或技能提升，为下周做准备"
+            },
+            {
+                q: "团队合作出现分歧时，你的第一反应是？",
+                A: "沉默旁观，等待他人协调后再行动",
+                B: "理性分析利弊，客观提出解决方案",
+                C: "照顾大家情绪，优先调和矛盾氛围",
+                D: "直接表明观点，推动尽快敲定结果"
+            },
+            {
+                q: "面对陌生的新环境，你通常会？",
+                A: "保持谨慎，先观察再慢慢融入",
+                B: "主动和身边人简单交流，温和适应",
+                C: "快速结识新朋友，主动活跃气氛",
+                D: "专注目标，优先完成自己的任务"
+            },
+            {
+                q: "制定长期计划时，你的习惯是？",
+                A: "灵活随性，根据实际情况随时调整",
+                B: "制定详细方案，严格按照计划执行",
+                C: "兼顾他人需求，计划优先配合团队",
+                D: "明确核心目标，高效推进落地执行"
+            },
+            {
+                q: "他人遇到困难向你求助，你会？",
+                A: "力所能及就帮忙，超出范围委婉拒绝",
+                B: "理性分析问题，给出客观可行的建议",
+                C: "共情对方情绪，耐心陪伴并主动帮忙",
+                D: "直接上手行动，快速帮对方解决问题"
+            }
+        ];
+
+        // 对应四种人格类型
+        const personalityResult = {
+            A: "内敛观察者人格",
+            B: "理性思考者人格",
+            C: "共情社交者人格",
+            D: "果敢行动者人格"
+        };
+        const personalityDetail = {
+            A: "性格沉稳内敛，擅长独立思考，观察力敏锐，重视个人边界，适合深耕专业领域，做事谨慎周全。",
+            B: "逻辑思维极强，客观冷静，擅长分析问题，做事有条理，适合策划、技术、研究类工作。",
+            C: "共情力突出，待人温和友善，擅长人际沟通，重视人际关系，适合服务、运营、协调类工作。",
+            D: "执行力极强，目标感明确，果断高效，抗压能力强，适合管理、市场、创业类工作。"
+        };
+
+        let currentIndex = 0;
+        let score = { A: 0, B: 0, C: 0, D: 0 };
+
+        // 渲染当前题目
+        function renderQuestion() {
+            const item = testQuestions[currentIndex];
+            document.getElementById("question").innerText = item.q;
+            document.getElementById("optA").innerText = "A. " + item.A;
+            document.getElementById("optB").innerText = "B. " + item.B;
+            document.getElementById("optC").innerText = "C. " + item.C;
+            document.getElementById("optD").innerText = "D. " + item.D;
+        }
+
+        // 选择选项计分
+        function selectAnswer(type) {
+            score[type]++;
+        }
+
+        // 切换题目，最后一题生成结果
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex >= testQuestions.length) {
+                document.querySelector(".question-area").style.display = "none";
+                document.querySelector(".btn-next").style.display = "none";
+                // 计算最高分人格
+                const maxScore = Math.max(...Object.values(score));
+                let finalType;
+                for (let key in score) {
+                    if (score[key] === maxScore) finalType = key;
+                }
+                document.getElementById("resultType").innerText = personalityResult[finalType];
+                document.getElementById("resultDetail").innerText = personalityDetail[finalType];
+                document.getElementById("resultBox").style.display = "block";
+                return;
+            }
+            renderQuestion();
+        }
+
+        // 初始化渲染第一题
+        renderQuestion();
+    </script>
+</body>
+</html>
